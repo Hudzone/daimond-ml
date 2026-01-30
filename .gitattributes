@@ -1,0 +1,3 @@
+lib/**/*.rb linguist-language=Ruby
+*.c linguist-generated
+*.h linguist-generated

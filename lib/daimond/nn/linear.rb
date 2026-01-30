@@ -5,8 +5,8 @@ module Daimond
     class Linear < Module
       def initialize(in_features, out_features)
         super()
-        limit = Math.sqrt(6.0 / (in_features + out_features))
-        @weight = Tensor.new(Numo::DFloat.new(in_features, out_features).rand * 2 * limit - limit)
+        # Простая инициализация: small random values
+        @weight = Tensor.new(Numo::DFloat.new(in_features, out_features).rand_norm * 0.01)
         @bias = Tensor.zeros(out_features)
         @parameters = [@weight, @bias]
       end
