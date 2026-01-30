@@ -64,6 +64,19 @@ module Daimond
       out
     end
 
+    def sigmoid
+      # 1 / (1 + exp(-x))
+      out_data = @data.map { |x| 1.0 / (1.0 + Math.exp(-x)) }
+      out = Tensor.new(out_data, prev: [self], op: 'sigmoid')
+
+      # Производная сигмоиды: sigmoid(x) * (1 - sigmoid(x))
+      define_singleton_method(:backward) do
+        self.grad += out.data * (1.0 - out.data) * out.grad
+      end
+
+      out
+    end
+
     def sum
       out = Tensor.new(Numo::DFloat[@data.sum], prev: [self], op: 'sum')
 
@@ -122,5 +135,18 @@ module Daimond
     def self.zeros(*shape)
       Tensor.new(Numo::DFloat.zeros(*shape))
     end
+
+    def -(other)
+      other = other.is_a?(Tensor) ? other : Tensor.new(other)
+      out = Tensor.new(@data - other.data, prev: [self, other], op: '-')
+
+      define_singleton_method(:backward) do
+        self.grad += out.grad
+        other.grad -= out.grad
+      end
+
+      out
+    end
+
   end
 end

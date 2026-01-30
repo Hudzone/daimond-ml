@@ -1,6 +1,6 @@
 require_relative '../lib/daimond'
 
-# XOR датасет
+# XOR данные
 X = [
   [0, 0],
   [0, 1],
@@ -9,12 +9,8 @@ X = [
 ]
 Y = [[0], [1], [1], [0]]
 
-# Конвертируем в тензоры
-x_tensor = X.map { |row| Daimond::Tensor.new([row]) }
-y_tensor = Y.map { |row| Daimond::Tensor.new([row]) }
-
-# Модель: 2 -> 2 -> 1
-class XORModel < Daimond::NN::Module
+# Создаем модель
+class XORNet < Daimond::NN::Module
   def initialize
     super()
     @fc1 = Daimond::NN::Linear.new(2, 2)
@@ -23,37 +19,51 @@ class XORModel < Daimond::NN::Module
   end
 
   def forward(x)
-    h = x.dot(@fc1.weight.data.transpose) + @fc1.bias.data
-    h = h.map { |v| v > 0 ? v : 0 }  # ReLU руками для простоты
-
-    out = h.dot(@fc2.weight.data.transpose) + @fc2.bias.data
-    # Сигмоида: 1 / (1 + exp(-x))
-    out.map { |v| 1.0 / (1.0 + Math.exp(-v)) }
+    h = @fc1.forward(x).sigmoid
+    @fc2.forward(h).sigmoid
   end
-
-  attr_reader :fc1, :fc2
 end
 
-model = XORModel.new
-optimizer = Daimond::Optim::SGD.new(model.parameters, lr: 0.5)
+model = XORNet.new
+optimizer = Daimond::Optim::SGD.new(model.parameters, lr: 1.0)
 
-puts "Training XOR..."
+puts "Training XOR with Autograd..."
 
 1000.times do |epoch|
   total_loss = 0
 
-  x_tensor.each_with_index do |x, i|
-    y = y_tensor[i]
+  X.each_with_index do |x_row, i|
+    y_true = Y[i][0]
 
     # Forward
-    pred = model.forward(x.data)
-    loss = ((pred - y.data)**2).sum  # MSE
+    x_tensor = Daimond::Tensor.new([x_row])
+    y_true_tensor = Daimond::Tensor.new([[y_true]])
 
-    total_loss += loss
+    pred = model.forward(x_tensor)
 
-    # Backward (ручной для начала)
-    # TODO: Здесь нужен полноценный autograd, пока упрощенно
+    # MSE Loss: (pred - y)^2
+    diff = pred - y_true_tensor
+    loss = (diff * diff).sum
+
+    total_loss += loss.data[0]
+
+    # Backward - вот где магия!
+    optimizer.zero_grad
+    loss.backward!
+
+    # Update
+    optimizer.step
   end
 
-  puts "Epoch #{epoch}: Loss = #{total_loss / 4.0}" if epoch % 100 == 0
+  if epoch % 100 == 0
+    avg_loss = total_loss / 4.0
+    puts "Epoch #{epoch}: Loss = #{avg_loss.round(6)}"
+  end
+end
+
+# Тестируем результат
+puts "\nResults:"
+X.each_with_index do |x, i|
+  pred = model.forward(Daimond::Tensor.new([x]))
+  puts "Input: #{x} -> Predicted: #{pred.data[0].round(4)}, Expected: #{Y[i][0]}"
 end

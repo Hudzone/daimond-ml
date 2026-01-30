@@ -1,0 +1,43 @@
+# Ruby / Bundler
+*.gem
+*.rbc
+.bundle
+vendor/
+Gemfile.lock
+.ruby-version
+.ruby-gemset
+
+# Документация и тесты
+doc/
+rdoc/
+.yardoc
+coverage/
+test/tmp/
+spec/reports/
+
+# IDE и редакторы
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Компилированные расширения (для будущего Rust/C backend)
+*.o
+*.so
+*.bundle
+*.dll
+*.dylib
+target/          # Rust build artifacts
+
+# ML-специфичное (датасеты и модели)
+data/
+datasets/
+*.csv            # Если большие датасеты
