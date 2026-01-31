@@ -115,7 +115,7 @@ ruby examples/mnist_conv_rust.rb
 - [x] MNIST 97% accuracy (Adam)
 - [x] Conv2D + MaxPool layers
 - [x] Rust backend
-- [x] Training bosualization
+- [x] Training visualization
 - [ ] Batch Normalization & Dropout
 - [ ] GPU support (OpenCL/CUDA via FFI)
 - [ ] ONNX export/import
