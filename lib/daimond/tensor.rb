@@ -1,4 +1,5 @@
 require 'numo/narray'
+require_relative 'rust_backend' rescue nil
 
 module Daimond
   class Tensor
@@ -81,30 +82,65 @@ module Daimond
 
     def dot(other)
       other = other.is_a?(Tensor) ? other : Tensor.new(other)
-      left = self   # input [batch, in]
-      right = other # weight [in, out]
-      out = Tensor.new(@data.dot(other.data), prev: [self, other], op: 'dot')
 
-      out._backward = lambda do
-        grad = out.grad  # [batch, out]
+      inner_dim = @data.shape[1]
+      out_dim = other.data.shape[1]
 
-        # dL/dW = X^T @ grad  -> [in, batch] @ [batch, out] = [in, out]
-        right.grad += left.data.transpose.dot(grad)
+      # Глобальный счетчик для отладки
+      $rust_count ||= 0
+      $ruby_count ||= 0
 
-        # dL/dX = grad @ W^T  -> [batch, out] @ [out, in] = [batch, in]
-        left.grad += grad.dot(right.data.transpose)
+      rust_available = defined?(Daimond::Rust)
+      condition = (inner_dim > 100 || out_dim > 50)
+
+      if rust_available && condition
+        begin
+          rust_a = Daimond::Rust::Tensor.from_array(@data.to_a)
+          rust_b = Daimond::Rust::Tensor.from_array(other.data.to_a)
+          rust_result = rust_a.matmul(rust_b)
+
+          out = Tensor.new(Numo::DFloat[*rust_result.to_a], prev: [self, other], op: 'dot')
+          out._backward = lambda do
+            grad = out.grad
+            self.grad += grad.dot(other.data.transpose)
+            other.grad += self.data.transpose.dot(grad)
+          end
+
+          $rust_count += 1
+          out
+        rescue => e
+          $ruby_count += 1
+
+          # Fallback
+          out = Tensor.new(@data.dot(other.data), prev: [self, other], op: 'dot')
+          out._backward = lambda do
+            grad = out.grad
+            self.grad += grad.dot(other.data.transpose)
+            other.grad += self.data.transpose.dot(grad)
+          end
+          out
+        end
+      else
+        $ruby_count += 1
+        # Ruby version
+        out = Tensor.new(@data.dot(other.data), prev: [self, other], op: 'dot')
+        out._backward = lambda do
+          grad = out.grad
+          self.grad += grad.dot(other.data.transpose)
+          other.grad += self.data.transpose.dot(grad)
+        end
+        out
       end
-
-      out
     end
 
     def relu
+      out_data = @data.map { |x| x > 0 ? x : 0.0 }
+      out = Tensor.new(out_data, prev: [self], op: 'relu')
       input = self
-      out = Tensor.new(@data.map { |x| x > 0 ? x : 0.0 }, prev: [self], op: 'relu')
 
       out._backward = lambda do
         grad = out.grad
-        mask = out.data.map { |x| x > 0 ? 1.0 : 0.0 }
+        mask = input.data.map { |x| x > 0 ? 1.0 : 0.0 }
         input.grad += mask * grad
       end
 

@@ -1,0 +1,13 @@
+[package]
+name = "daimond_rust"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+magnus = { version = "0.6", features = ["rb-sys"] }
+rb-sys = "0.9"
+ndarray = "0.15"

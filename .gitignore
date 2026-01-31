@@ -41,3 +41,10 @@ target/          # Rust build artifacts
 data/
 datasets/
 *.csv            # Если большие датасеты
+
+# Added by cargo
+
+/target
+ext/daimond_rust/target/
+*.bundle
+*.so
