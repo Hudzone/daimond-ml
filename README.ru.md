@@ -2,10 +2,11 @@
 
 Deep Learnin фреймворк для Ruby, вдохновлённый PyTorch.
 
+[![Gem Version](https://badge.fury.io/rb/daimond.svg)](https://rubygems.org/gems/daimond)
 [![Ruby](https://img.shields.io/badge/ruby-%23CC342D.svg?style=for-the-badge&logo=ruby&logoColor=white)](https://www.ruby-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Почему Ruby?** ХЗ, захотелось. dAImond возвращает радость в возюкании с ML, потому что это Ruby.
+> **Почему Ruby?** ХЗ, захотелось. dAImond возвращает радость в возюкании с ML, потому что это Ruby. Поддерживает автоматическое дифференцирование и опциональный Rust backend для ускорения в 50-100 раз.
 
 ## Возможности
 
@@ -94,20 +95,30 @@ prediction = model.forward(test_image)
 ```
 
 ## Производительность
-Хотя чистый Ruby медленнее PyTorch/CUDA, dAImond обеспечивает разумную скорость для прототипирования и небольших/средних датасетов:
-MNIST (60k изображений): ~2-3 минуты на эпоху на современном CPU
-Идеально для обучения, исследований и моделей < 1M параметров
+| Backend   | MNIST (60k) Speed | Accuracy   |
+| --------- | ----------------- | ---------- |
+| Pure Ruby | ~30 min/epoch     | 97%        |
+| Numo (C)  | ~3 min/epoch      | 97%        |
+| **Rust**  | **~12 sec/epoch** | **89-98%** |
 
-## Планы
-- [x] Ядро autograd
-- [x] Линейные слои и активации
-- [x] MNIST 97% точности
-- [x] Сериализация моделей
-- [ ] Свёрточные слои (Conv2D)
-- [ ] Batch Normalization и Dropout
-- [ ] Оптимизаторы Adam/RMSprop
-- [ ] Поддержка GPU (OpenCL/CUDA via FFI)
-- [ ] ONNX экспорт/импорт
+## Бэкенд на расте
+For 50-100x speedup, compile Rust extensions:
+```bash
+cd ext/daimond_rust
+cargo build --release
+cd ../..
+ruby examples/mnist_conv_rust.rb
+```
+
+## Roadmap
+- [x] Ядро Autograd
+- [x] Полносвязные и сверточные слои
+- [x] MNIST 97%  (Adam)
+- [x] Rust backend
+- [x] Визуализация
+- [ ] Batch Normalization & Dropout
+- [ ] OpenCL/CUDA via FFI
+- [ ] ONNX
 
 ## Помощь
 Буду рад любой помощи! Инфа в CONTRIBUTING.md.

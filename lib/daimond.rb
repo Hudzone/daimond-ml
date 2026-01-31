@@ -15,6 +15,7 @@ require_relative 'daimond/nn/flatten'
 require_relative 'daimond/optim/adam'
 require_relative 'daimond/nn/conv2d_rust'
 require_relative 'daimond/nn/max_pool2d_rust'
+require_relative 'daimond/version'
 begin
   require_relative 'daimond/rust_bridge'
 rescue LoadError
@@ -22,7 +23,6 @@ rescue LoadError
 end
 
 module Daimond
-  VERSION = '0.1.0'
 
   def self.randn(*args)
     Tensor.randn(*args)

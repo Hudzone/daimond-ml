@@ -1,7 +1,8 @@
 # dAImond 💎
 
-PyTorchにインスパイアされた、Rubyのためのディープラーニングフレームワーク。Rubyコミュニティへの愛を込めて、ゼロから作成しました。
+PyTorchにインスパイアされた、Rubyのためのディープラーニングフレームワーク。Rubyコミュニティへの愛を込めて、ゼロから作成しました。オプションのRustバックエンドで50-100倍の高速化を実現。
 
+[![Gem Version](https://badge.fury.io/rb/daimond.svg)](https://rubygems.org/gems/daimond)
 [![Ruby](https://img.shields.io/badge/ruby-%23CC342D.svg?style=for-the-badge&logo=ruby&logoColor=white)](https://www.ruby-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -93,20 +94,32 @@ prediction = model.forward(test_image)
 ```
 
 ## パフォーマンス
-純粋なRubyはPyTorch/CUDAより遅いですが、dAImondはプロトタイピングや小〜中規模のデータセットに対して合理的な速度を実現しています：
-MNIST（60k画像）：現代のCPUで1エポックあたり約2〜3分
-教育、研究、100万パラメーター未満のモデルに最適
+| Backend  | 速度            | 精度         |
+| -------- | ------------- | ---------- |
+| 純粋なRuby  | ~30分/エポック     | 97%        |
+| Numo (C) | ~3分/エポック      | 97%        |
+| **Rust** | **~12秒/エポック** | **89-98%** |
+
+## Rustバックエンド（本番環境向け）
+
+50-100倍の高速化のために：
+```bash
+cd ext/daimond_rust
+cargo build --release
+cd ../..
+ruby examples/mnist_conv_rust.rb
+```
 
 ## ロードマップ
-- [x] コアautogradエンジン
-- [x] 線形レイヤーと活性化関数
-- [x] MNIST 97%精度
-- [x] モデルのシリアライズ
-- [ ] 畳み込みレイヤー（Conv2D）
-- [ ] Batch NormalizationとDropout
-- [ ] Adam/RMSpropオプティマイザー
-- [ ] GPUサポート（OpenCL/CUDA経由FFI）
-- [ ] ONNXエクスポート/インポート
+
+[x] Core autograd
+[x] Conv2D + MaxPool
+[x] MNIST 98% (Adam)
+[x] Rust backend
+[x] Visualization
+[x] RubyGemsで公開！ 🎉
+[ ] Batch Norm, Dropout
+[ ] GPU (CUDA)
 
 ## コントリビューション
 どんなコントリビューターも歓迎します！CONTRIBUTING.mdをご覧ください。

@@ -1,7 +1,8 @@
 # dAImond 💎
 
-Deep Learning framework for Ruby, inspired by PyTorch. Written from scratch with love for the Ruby community.
+Deep Learning framework for Ruby, inspired by PyTorch. Written from scratch with love for the Ruby community. Features automatic differentiation, neural networks, and optional Rust backend for 50-100x speedup.
 
+[![Gem Version](https://badge.fury.io/rb/daimond.svg)](https://rubygems.org/gems/daimond)
 [![Ruby](https://img.shields.io/badge/ruby-%23CC342D.svg?style=for-the-badge&logo=ruby&logoColor=white)](https://www.ruby-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -93,18 +94,29 @@ prediction = model.forward(test_image)
 ```
 
 ## Performance
-While pure Ruby is slower than PyTorch/CUDA, dAImond achieves reasonable speeds for prototyping and small-to-medium datasets:
-MNIST (60k images): ~2-3 minutes per epoch on modern CPU
-Perfect for education, research, and production models < 1M parameters
+| Backend   | MNIST (60k) Speed | Accuracy   |
+| --------- | ----------------- | ---------- |
+| Pure Ruby | ~30 min/epoch     | 97%        |
+| Numo (C)  | ~3 min/epoch      | 97%        |
+| **Rust**  | **~12 sec/epoch** | **89-98%** |
+
+## With Rust Backend
+For 50-100x speedup, compile Rust extensions:
+```bash
+cd ext/daimond_rust
+cargo build --release
+cd ../..
+ruby examples/mnist_conv_rust.rb
+```
 
 ## Roadmap
 - [x] Core autograd engine
 - [x] Linear layers & activations
-- [x] MNIST 97% accuracy
-- [x] Model serialization
-- [ ] Convolutional layers (Conv2D)
+- [x] MNIST 97% accuracy (Adam)
+- [x] Conv2D + MaxPool layers
+- [x] Rust backend
+- [x] Training bosualization
 - [ ] Batch Normalization & Dropout
-- [ ] Adam/RMSprop optimizers
 - [ ] GPU support (OpenCL/CUDA via FFI)
 - [ ] ONNX export/import
 

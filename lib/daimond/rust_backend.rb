@@ -1,4 +1,8 @@
-require_relative 'rust/daimond_rust'
+begin
+  require_relative 'rust/daimond_rust'
+rescue LoadError
+  # Rust backend не скомпилирован - будем использовать чистый Ruby
+end
 
 module Daimond
   module RustBackend
